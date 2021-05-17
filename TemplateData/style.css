@@ -145,3 +145,7 @@ label
    }
 }
 
+.tingle-force-overflow
+{
+    overflow-y: scroll !important;
+}

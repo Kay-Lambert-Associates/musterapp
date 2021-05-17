@@ -1,38 +1,57 @@
-// Loaded via <script> tag, create shortcut to access PDF.js exports.
-var pdfjsLib = window["pdfjs-dist/build/pdf"];
-// The workerSrc property shall be specified.
-pdfjsLib.GlobalWorkerOptions.workerSrc = "./TemplateData/pdf.worker.js";
-var thePdf;
+var pdfjsLib = {},
+  thePdf = {},
+  modal = {};
 
-var modal = new tingle.modal({
-    footer: false,
-    stickyFooter: false,
-    closeLabel: "Close",
-    onOpen: function() {
-        console.log('modal open');
-    },
-    onClose: function() {
-        console.log('modal closed');
-    },
-    beforeClose: function() {
-        // here's goes some logic
-        // e.g. save content before closing the modal
-        return true; // close the modal
-    }
-});
-
-function base64ToPdf(pdfString) {
+function base64ToPdf (pdfString, isLeader) {
+  var _this = this;
+  var _isLeader = isLeader;
   if (!pdfString) {
     console.error("The pdf string must not be empty");
     return;
   }
+  if (typeof Pointer_stringify !== "undefined") {
+    pdfString = Pointer_stringify(pdfString);
+  }
+
+  modal = new tingle.modal({
+    footer: false,
+    stickyFooter: false,
+    closeMethods: ["button", "escape"],
+    cssClass: ["tingle-force-overflow"],
+    onOpen: function () {
+      if (!_isLeader || isLeader === false) {
+        var closeButton = document.getElementsByClassName(
+          "tingle-modal__close"
+        )[0];
+        closeButton.parentNode.removeChild(closeButton);
+      }
+      if (typeof gameInstance !== "undefined") {
+        gameInstance.SetFullscreen(0);
+      }
+    },
+    onClose: function () {
+      if (typeof gameInstance !== "undefined") {
+        gameInstance.SetFullscreen(1);
+      }
+      modal.destroy();
+    },
+    beforeClose: function () {
+      if (!_isLeader || _isLeader == false) {
+        return false;
+      }
+      return true;
+    },
+  });
+
+  pdfjsLib = window["pdfjs-dist/build/pdf"];
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "./TemplateData/pdf.worker.js";
+
+  var viewer = document.createElement("div");
+  viewer.setAttribute("id", "pdf-viewer");
+
   // atob() is used to convert base64 encoded PDF to binary-like data.
   // (See also https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/
   // Base64_encoding_and_decoding.)
-  //var viewer = document.getElementById("pdf-viewer");
-  //viewer.innerHTML = "";
-  var viewer = document.createElement('div');
-  viewer.setAttribute('id', 'pdf-viewer');
   var pdfData = atob(pdfString);
 
   // Using DocumentInitParameters object to load binary data.
@@ -52,7 +71,7 @@ function base64ToPdf(pdfString) {
           var canvas = document.createElement("canvas");
           canvas.className = "pdf-page-canvas";
           viewer.appendChild(canvas);
-          renderPage(page, canvas);
+          _this.renderPage(page, canvas);
         }
 
         modal.setContent(viewer);
@@ -64,6 +83,10 @@ function base64ToPdf(pdfString) {
       console.error(JSON.stringify(reason));
     }
   );
+}
+
+function closePdf() {
+  modal.close();
 }
 
 function renderPage(pageNumber, canvas) {
