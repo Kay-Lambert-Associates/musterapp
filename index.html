@@ -21,6 +21,7 @@
     </script>
   </head>
   <body>
+    <audio style="display: none" id="meeting-audio"></audio>
     <div class="webgl-content">
       <div
         id="unityContainer"
@@ -105,9 +106,10 @@
         document.getElementsByName("fileToUpload")[0].accept = types;
       }
     </script>
+    <script src="TemplateData/amazon-chime-sdk.min.js"></script>
+    <script src="TemplateData/chime.js"></script>
     <script src="TemplateData/pdf.js"></script>
     <script src="TemplateData/tingle.min.js"></script>
-    <script src="TemplateData/pdfViewer.jslib"></script>
   </body>
 </html>
 

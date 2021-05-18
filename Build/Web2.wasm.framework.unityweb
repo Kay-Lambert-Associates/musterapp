@@ -1303,7 +1303,7 @@ function _emscripten_asm_const_ii(code, a0) {
  return ASM_CONSTS[code](a0);
 }
 STATIC_BASE = GLOBAL_BASE;
-STATICTOP = STATIC_BASE + 5280016;
+STATICTOP = STATIC_BASE + 5282576;
 __ATINIT__.push({
  func: (function() {
   __GLOBAL__sub_I_AccessibilityScriptingClasses_cpp();
@@ -3158,6 +3158,10 @@ __ATINIT__.push({
  })
 }, {
  func: (function() {
+  __GLOBAL__sub_I_Il2CppCodeRegistration_cpp();
+ })
+}, {
+ func: (function() {
   __GLOBAL__sub_I_Lump_libil2cpp_vm_cpp();
  })
 }, {
@@ -3174,14 +3178,10 @@ __ATINIT__.push({
  })
 }, {
  func: (function() {
-  __GLOBAL__sub_I_Il2CppCodeRegistration_cpp();
- })
-}, {
- func: (function() {
   ___emscripten_environ_constructor();
  })
 });
-var STATIC_BUMP = 5280016;
+var STATIC_BUMP = 5282576;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 var tempDoublePtr = STATICTOP;
@@ -4419,6 +4419,14 @@ function _Send(index, arrayPtr, offset, length) {
   return true;
  }
  return false;
+}
+function _SetupAudio(meetingString) {
+ window.onbeforeunload = (function(e) {
+  gameInstance.SendMessage("SessionController", "EndAudioSession");
+ });
+ meetingString = Pointer_stringify(meetingString);
+ var meetingData = JSON.parse(meetingString);
+ JoinAudio(meetingData);
 }
 function _Unity_BrowserCallFactory_InjectJsCode(jscode) {
  var txt = Pointer_stringify(jscode);
@@ -21948,6 +21956,7 @@ Module.asmLibraryArg = {
  "_OpenFilePopup": _OpenFilePopup,
  "_SaveFile": _SaveFile,
  "_Send": _Send,
+ "_SetupAudio": _SetupAudio,
  "_Unity_BrowserCallFactory_InjectJsCode": _Unity_BrowserCallFactory_InjectJsCode,
  "_Unity_DeviceApi_LastUpdate": _Unity_DeviceApi_LastUpdate,
  "_Unity_DeviceApi_RequestUpdate": _Unity_DeviceApi_RequestUpdate,
