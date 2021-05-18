@@ -20,14 +20,19 @@ async function JoinAudio(meetingData) {
     );
 
     const audioInputs = await meetingSession.audioVideo.listAudioInputDevices();
-    const videoInputs = await meetingSession.audioVideo.listVideoInputDevices();
+   
 
-    await meetingSession.audioVideo.chooseAudioInputDevice(
-      audioInputs[0].deviceId
-    );
-    await meetingSession.audioVideo.chooseVideoInputDevice(
-      videoInputs[0].deviceId
-    );
+	try
+	{
+	  await meetingSession.audioVideo.chooseAudioInputDevice(audioInputs[0].deviceId)
+	}
+	catch(ex)
+	{
+		console.log("Failed to use the default audio selection, continuing")
+	}
+
+
+
 
     const audioOutputElement = document.getElementById("meeting-audio");
     meetingSession.audioVideo.bindAudioElement(audioOutputElement);
