@@ -1,3 +1,5 @@
+var meetingSession;
+
 async function JoinAudio(meetingData) {
   try {
     let meeting = meetingData.MeetingDetails.Meeting;
@@ -13,7 +15,7 @@ async function JoinAudio(meetingData) {
       meeting,
       attendee
     );
-    window.meetingSession = new ChimeSDK.DefaultMeetingSession(
+    meetingSession = new ChimeSDK.DefaultMeetingSession(
       configuration,
       logger,
       deviceController
@@ -36,3 +38,19 @@ async function JoinAudio(meetingData) {
     console.error(err);
   }
 }
+
+async function ListAudioInputDevices()
+{
+  return await meetingSession.audioVideo.listAudioInputDevices();
+}
+
+
+async function ChooseAudioInputDevice(deviceId)
+{
+  try {
+    await meetingSession.audioVideo.chooseAudioInputDevice(deviceId);
+  } catch (ex) {
+    console.log("Failed to use the default audio selection, continuing");
+  }
+}
+
