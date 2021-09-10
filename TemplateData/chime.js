@@ -54,3 +54,13 @@ async function ChooseAudioInputDevice(deviceId)
   }
 }
 
+async function MuteAudioInput()
+{
+  meetingSession.audioVideo.realtimeMuteLocalAudio();
+}
+
+async function UnmuteAudioInput()
+{
+  meetingSession.audioVideo.realtimeUnmuteLocalAudio();
+}
+
