@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Unity WebGL Player | Muster</title>
-    <link rel="shortcut icon" href="TemplateData/favicon.ico" />
+    <link rel="shortcut icon" href="TemplateData/favicon.png" />
     <link rel="stylesheet" href="TemplateData/style.css" />
     <link rel="stylesheet" href="TemplateData/loading.css" />
     <script src="TemplateData/UnityProgress.js"></script>
@@ -23,12 +23,23 @@
       crossorigin="anonymous"
     />
     <script>
-      var gameInstance = UnityLoader.instantiate("unityContainer", "Build/Client.json", {
+      var unityInstance = UnityLoader.instantiate("unityContainer", "Build/Client.json", {
         onProgress: UnityProgress,
       });
+      var gameInstance = unityInstance;
     </script>
   </head>
   <body>
+    <!-- Error Toast -->
+    <div id="error-toast" data-bs-autohide="false" class="toast position-fixed bottom-0 end-0 text-white bg-danger" style="z-index: 11" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          No message.
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+    
     <!-- Camera display -->
     <div
       class="offcanvas offcanvas-top"
@@ -55,9 +66,10 @@
         <i id="camera-toggle-icon" class="fas fa-chevron-down"></i>
       </button>
     </div>
-
     <!-- Camera display end-->
+
     <audio style="display: none" id="meeting-audio"></audio>
+
     <div class="webgl-content">
       <div id="unityContainer" style="width: 1280px; height: 720px"></div>
       <div class="footer">
@@ -66,66 +78,6 @@
       </div>
     </div>
 
-    <!-- BEGIN WEBGL FILE BROWSER LIB -->
-
-    <form id="fileBrowserPopup" style="display: none">
-      <div class="fileBrowserBackground"></div>
-      <div class="fileBrowserContainer">
-        <span style="font-size: 4em; color: #00e2b0">
-          <i class="icon fas fa-file-upload"></i>
-        </span>
-        <span class="fileBrowserText">Click below to open file browser</span>
-
-        <div>
-          <label for="closePopup">
-            <a class="button6 button-grey">Close</a>
-          </label>
-          <input
-            type="button"
-            name="closePopup"
-            id="closePopup"
-            style="display: none"
-            onclick="hidePopup();"
-          />
-          <label for="fileToUpload">
-            <a class="button6 button-green bouncy">Select</a>
-          </label>
-          <input
-            type="File"
-            name="fileToUpload"
-            id="fileToUpload"
-            onchange="sendfile(event);return false;"
-          />
-        </div>
-      </div>
-    </form>
-    <script type="text/javascript">
-      function sendfile(e) {
-        var files = e.target.files;
-        for (var i = 0, f; (f = files[i]); i++) {
-          var reader = new FileReader();
-          reader.onload = (function (file) {
-            return function (e) {
-              gameInstance.SendMessage("FileBrowserDialogLib", "ApplyFileName", escape(file.name));
-
-              (window.filedata = window.filedata ? window.filedata : {})[file.name] =
-                e.target.result;
-              gameInstance.SendMessage("FileBrowserDialogLib", "FileUpload", file.name);
-            };
-          })(f);
-          reader.readAsArrayBuffer(f);
-        }
-      }
-      function hidePopup() {
-        gameInstance.SendMessage("FileBrowserDialogLib", "CloseFilePopupDialog");
-      }
-    </script>
-
-    <script type="text/javascript">
-      function FilterOfTypes(types) {
-        document.getElementsByName("fileToUpload")[0].accept = types;
-      }
-    </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script
       src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"
@@ -137,11 +89,222 @@
       integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13"
       crossorigin="anonymous"
     ></script>
+    <script src="https://unpkg.com/pdfjs-dist@2.13.216/build/pdf.worker.min.js"></script>
+    <script src="https://unpkg.com/pdfjs-dist@2.13.216/build/pdf.min.js"></script>
     <script src="TemplateData/tingle.min.js"></script>
     <script src="TemplateData/utils/dates.js"></script>
     <script src="TemplateData/amazon-chime-sdk.min.js"></script>
     <script src="TemplateData/main.js"></script>
     <script src="TemplateData/chime.js"></script>
-    <script src="TemplateData/pdf.js"></script>
-  </body>
+    <script src="TemplateData/utils/toast.js"></script>
+    <script src="TemplateData/pdf-viewer.js"></script>
+  
+    <form id="fileBrowserPopup" style="display: none">
+        <div class="fileBrowserBackground"></div>
+        <div class="fileBrowserContainer">
+        <span style="font-size: 4em; color: #00e2b0">
+            <i class="icon fas fa-file-upload"></i>
+        </span>
+        <span class="fileBrowserText">Click below to open file browser</span>
+
+        <div>
+            <label for="closePopup">
+            <a class="button6 button-grey">Close</a>
+            </label>
+            <input
+            type="button"
+            name="closePopup"
+            id="closePopup"
+            style="display: none"
+            onclick="requestCloseFileBrowserForOpen();"
+            />
+            <label for="fileToUpload">
+            <a class="button6 button-green bouncy">Select</a>
+            </label>
+            <input
+            type="File"
+            name="fileToUpload"
+            id="fileToUpload"
+            onchange="fbLoadFiles(event.target.files);return false;"
+            />
+        </div>
+        </div>
+    </form>
+
+    <script type='text/javascript'>
+        function callFBFunctionByName(functionName, parameter){
+            switch(functionName){
+                case "initializeFBLibrary":
+                    initializeFBLibrary();
+                    break;
+                case "openFileBrowserForLoad":
+                    openFileBrowserForLoad(parameter);
+                    break;
+                case "cleanupFB":
+                    cleanupFB();
+                    break;       
+                case "closeFileBrowserForOpen":
+                    closeFileBrowserForOpen();
+                    break;
+                case "saveFile":
+                    saveFileFB(parameter);
+                    break;
+                case "setLocalization":
+                    setLocalizationFB(parameter);
+                    break;
+            }
+        }
+        document.callFBFunctionByName = callFBFunctionByName;
+
+        function initializeFBLibrary(){
+            document.fbPopup = document.getElementById("fileBrowserPopup");
+            document.fbOpenFilePopupInput = document.getElementById("fileToUpload");
+
+            document.fbStorage = { 
+                initialized: true,
+                loadedFiles: {},
+                dataPointers: []
+            };
+        }
+
+        function openFileBrowserForLoad(parameters){
+            if(document.fbStorage.initialized !== true)
+                return;
+
+            var typesFilter = parameters[0];
+            var isMultipleSelection = parameters[1] === 1 ? true : false;
+
+            if(document.fbOpenFilePopupInput.hasAttribute('multiple'))
+                document.fbOpenFilePopupInput.removeAttribute('multiple');
+
+            if(isMultipleSelection){
+                document.fbOpenFilePopupInput.setAttribute('multiple', '');
+            }
+
+            document.fbOpenFilePopupInput.accept = typesFilter;
+		    document.fbPopup.style.display = "flex";
+        }
+
+        function closeFileBrowserForOpen(){
+            if(document.fbStorage.initialized !== true)
+                return;
+            document.fbPopup.style.display = "none";
+        }
+
+        function cleanupFB() {
+            if(document.fbStorage.initialized !== true)
+                return;
+            document.fbStorage.loadedFiles = {};
+            document.fbStorage.dataPointers = [];
+        }
+
+        function saveFileFB(fileData){
+            if(document.fbStorage.initialized !== true)
+                return;
+
+            let fileInfo = {
+                status: true,
+                message: "",
+                name: fileData.name
+            };
+
+            try{
+                var contentType = 'application/octet-stream';
+                var a = document.createElement('a');
+                var blob = new Blob([fbBase64ToBytesArray(fileData.data)], {
+                    'type': contentType
+                });
+                a.href = window.URL.createObjectURL(blob);
+                a.download = fileData.name;
+
+                if (document.createEvent) {
+                    var event = document.createEvent('MouseEvents');
+                    event.initEvent('click', true, true);
+                    a.dispatchEvent(event);
+                } else {
+                    a.click();
+                }
+
+                gameInstance.SendMessage(libraryHandlerObjectName, "HandleFileSaved", JSON.stringify(fileInfo));
+            }
+            catch(ex){
+                fileInfo.status = false;
+                fileInfo.message = ex.message;
+
+                gameInstance.SendMessage(libraryHandlerObjectName, "HandleFileSaved", JSON.stringify(fileInfo));
+            }
+        }
+
+        const libraryHandlerObjectName = "[FGFileBrowser]";
+
+        function fbLoadFiles(files) {
+            gameInstance.SendMessage(libraryHandlerObjectName, 'SetAmountOfFilesToBeLoaded', files.length);
+
+            for (var i = 0, f; f = files[i]; i++) {
+                var reader = new FileReader();
+                reader.onload = (function (file) {
+                    return function (fileloadEvent) {
+                        let loadedFileInfo = fileloadEvent.target.result;
+                
+                        document.fbStorage.loadedFiles[file.name] = {
+                            info: loadedFileInfo
+                        };
+
+                        let extensionSplit = file.name.split('.');
+                        let extension = extensionSplit[extensionSplit.length - 1];
+                        let name = file.name.replace(extension, "");
+                        name = name.substring(0, name.length - 1);
+
+                        let loadedFile = {
+                            fullName: file.name,
+                            name: name,
+                            path: "unavailable-in-web",
+                            length: loadedFileInfo.byteLength,
+                            size: file.size,
+                            extension: extension
+                        };
+
+                        gameInstance.SendMessage(libraryHandlerObjectName, 'HandleLoadedFile', JSON.stringify(loadedFile));
+                    }
+                })(f);
+                
+                reader.readAsArrayBuffer(f);
+            }
+			document.fbOpenFilePopupInput.value = "";
+        }
+
+        function requestCloseFileBrowserForOpen() {
+            gameInstance.SendMessage(libraryHandlerObjectName, "CloseFileBrowserForOpen");
+        }
+
+        function fbBase64ToBytesArray(base64) {
+            var binary_string = window.atob(base64);
+            var len = binary_string.length;
+            var bytes = new Uint8Array(len);
+            for (var i = 0; i < len; i++) {
+                bytes[i] = binary_string.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function setLocalizationFB(parameter){
+            switch(parameter.key){
+                case "HEADER_TITLE":
+                    document.getElementById("fb_popup_header_title").innerHTML = parameter.value;
+                    break;
+                case "DESCRIPTION_TEXT":
+                    document.getElementById("fb_popup_description_title").innerHTML = parameter.value;
+                    break;
+                case "SELECT_BUTTON_CONTENT":
+                    document.getElementById("fb_popup_select_button_title").innerHTML = parameter.value;
+                    break;
+                case "CLOSE_BUTTON_CONTENT":
+                    document.getElementById("fb_popup_close_button_title").innerHTML = parameter.value;
+                    break;
+            }
+        }
+
+    </script>
+    <!-- END WEBGL FILE BROWSER LIB -->
+</body>
 </html>

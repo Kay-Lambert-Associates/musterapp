@@ -238,10 +238,6 @@ function startSession()
 async function addObserver()
 {
   let observer = {
-    audioVideoDidStart: () => {
-      // Start your video this the meeting starts
-      meetingSession.audioVideo.startLocalVideoTile();
-    },
     videoTileDidUpdate: (tileState) => {
       // Ignore a tile without attendee ID and a content/screen share.
       if (!tileState.boundAttendeeId || tileState.isContent) {
@@ -296,8 +292,10 @@ async function chooseVideoInputDeviceAsync(deviceId) {
   try {
     selectedVideoInput = deviceId;
     await meetingSession.audioVideo.chooseVideoInputDevice(deviceId);
+    meetingSession.audioVideo.startLocalVideoTile();
   } catch (ex) {
-    console.log("Failed to use the default video selection, continuing");
+    console.error("Failed to use the default video selection, continuing");
+    showToast("The video camera device is used by another software. Turn off all other browser tabs and/or software that uses your camera. Alternatively, select a different camera.");
   }
 }
 
@@ -305,7 +303,7 @@ async function chooseAudioInputDeviceAsync(deviceId) {
   try {
     await meetingSession.audioVideo.chooseAudioInputDevice(deviceId);
   } catch (ex) {
-    console.log("Failed to use the default audio selection, continuing");
+    console.error("Failed to use the default audio selection, continuing");
   }
 }
 
