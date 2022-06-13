@@ -4,4 +4,11 @@ function setUpTooltips() {
 
 $(function () {
   setUpTooltips();
+  $('#camera-toggle').on('click', togglePaddingToUnity);
+
 });
+
+function togglePaddingToUnity()
+{
+  $('#unityContainer').toggleClass('camera-visible');
+}
