@@ -318,6 +318,7 @@ body {
   width: 100vw; 
   height: 100vh;
   padding-top: 0;
+  position: absolute !important;
   -webkit-transition: padding-top .3s ease-in-out;
   -moz-transition: padding-top .3s ease-in-out;
   -o-transition: padding-top .3s ease-in-out;
