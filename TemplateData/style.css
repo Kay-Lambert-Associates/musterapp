@@ -329,3 +329,22 @@ body {
 {
   padding-top: 15vh !important;
 }
+.pids-wrapper
+{
+  width: 100%;
+  display: flex;
+}
+
+.pid
+{
+  width: calc(10% - 10px);
+  height: 10px;
+  display: inline-block;
+  margin: 5px;
+}
+
+.alert-link
+{
+  cursor: pointer;
+}
+

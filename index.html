@@ -23,7 +23,7 @@
       crossorigin="anonymous"
     />
     <script>
-      var unityInstance = UnityLoader.instantiate("unityContainer", "Build/Cllient-prod.json", {
+      var unityInstance = UnityLoader.instantiate("unityContainer", "Build/client-prod.json", {
         onProgress: UnityProgress,
       });
       var gameInstance = unityInstance;
@@ -31,7 +31,7 @@
   </head>
   <body>
     <!-- Error Toast -->
-    <div id="error-toast" data-bs-autohide="false" class="toast position-fixed bottom-0 end-0 text-white bg-danger" style="z-index: 11" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="error-toast" data-bs-autohide="false" class="toast position-fixed bottom-0 end-0 text-white bg-danger" style="z-index: 9999" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="d-flex">
         <div class="toast-body">
           No message.
@@ -39,7 +39,16 @@
         <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
       </div>
     </div>
-    
+    <!-- Info Toast -->
+    <div id="info-toast" data-bs-autohide="false" class="toast position-fixed bottom-0 end-0 text-white bg-info" style="z-index: 9999" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          No message.
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+
     <!-- Camera display -->
     <div
       class="offcanvas offcanvas-top"
@@ -74,6 +83,125 @@
     <div id="unityContainer" class="unity-container"></div>
 
 
+    <div id="readiness-checker" class="readiness-checker modal">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+          <div class="modal-content">
+              <div class="modal-header">
+              <h5 class="modal-title">Meeting Readiness</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                  <form>
+                      <div class="mb-3">
+                          <label class="form-label">Microphone Check</label>
+                          <div id="microphone-group" class="d-block">
+
+                              <div id="microphone-input-group" class="input-group reset d-none mb-3">
+                                  <span class="input-group-text status-icon">
+                                      <div class="spinner-border spinner-border-sm" role="status"></div>
+                                  </span>
+                                  <select id="microphone-dropdown" class="form-select" aria-label="Audio inputs dropdown"></select>
+                                  <button class="btn btn-outline-secondary" type="button" id="microphone-test-button" disabled="true">Test</button>
+                              </div>
+                              <div id="microphone-failure-alert" class="alert alert-danger reset d-none" role="alert">
+                                Microphone access denied. Please update site permissions.
+                              </div>
+                              <div id="microphone-volume-indicator" class="pids-wrapper reset d-none">
+                                  <div class="pid"></div>
+                                  <div class="pid"></div>
+                                  <div class="pid"></div>
+                                  <div class="pid"></div>
+                                  <div class="pid"></div>
+                                  <div class="pid"></div>
+                                  <div class="pid"></div>
+                                  <div class="pid"></div>
+                                  <div class="pid"></div>
+                                  <div class="pid"></div>
+                              </div>
+                              <div id="microphone-help" class="form-text reset d-none">If you cannot hear your voice while testing, select a different microphone.</div>
+                          </div>
+                      </div>
+
+                      <div class="mb-3">
+                          <label class="form-label">Speaker Check</label>
+                          <div id="speaker-group" class="d-block">
+                              <div id="speaker-input-group" class="input-group mb-3 reset d-none">
+                                  <span class="input-group-text status-icon">
+                                      <div class="spinner-border spinner-border-sm" role="status"></div>
+                                  </span>
+                                  <select id="speaker-dropdown" class="form-select" aria-label="Audio outputs dropdown"></select>
+                                  <button class="btn btn-outline-secondary" type="button" id="speaker-test-button">Test</button>
+                              </div>
+                              <span id="speaker-output-feedback" class="d-block reset d-none">Can you hear the audio? <a id="yes-link" href="javascript:void(0)">Yes</a> | <a id="no-link" href="javascript:void(0)">No</a></span>       
+                              <div id="speaker-failure-alert" class="alert alert-danger reset d-none" role="alert">
+                                Speaker access denied. Please update site permissions.
+                              </div>                
+                              <div id="speaker-help" class="form-text reset d-none">If you cannot hear sound while testing, select a different speaker.</div>
+                          </div>
+                      </div>
+
+                      <div class="mb-3">
+                          <label class="form-label">Camera Check</label>
+                          <div id="camera-group" class="d-block">
+                              <div id="camera-input-group" class="input-group mb-3 d-none">
+                                  <span class="input-group-text status-icon">
+                                      <div class="spinner-border spinner-border-sm" role="status"></div>
+                                  </span>
+                                  <select id="camera-dropdown" class="form-select" aria-label="Video inputs dropdown"></select>
+                                  <button class="btn btn-outline-secondary" type="button" id="camera-test-button">Test</button>
+                              </div>
+                              <div id="camera-failure-alert" class="alert alert-danger reset d-none" role="alert">
+                                Camera access denied. Try turning off other software that might use it or check site permissions and test again</a>.
+                              </div>
+                              <video id="camera-preview-display" class="reset mw-100 d-none"></video>
+                              <div id="camera-preview-help" class="form-text reset d-none">
+                                  If you cannot see your camera feed, close all other software.
+                              </div>
+                          </div>
+                      </div>
+<!--                       <div class="mb-3">
+                          <label for="connectivity-check" class="form-label">Connectivity Check</label>
+                          <div id="tcp-udp-group" class="d-block">
+                              <div id="tcp-udp-failure-alert" class="alert alert-danger reset d-none" role="alert">
+                                  TCP/UDP access denied. Please update firewall settings. <a id="tcp-udp-test-link" class="alert-link">Test Again</a>
+                              </div>
+                              <table class="table table-sm">
+                                  <thead>
+                                    <tr>
+                                      <th scope="col"></th>
+                                      <th scope="col">IP</th>
+                                      <th scope="col">Port</th>
+                                      <th scope="col">Status</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr id="tcp-group">
+                                      <th scope="row">TCP</th>
+                                      <td>99.77.128.0/18</td>
+                                      <td>443</td>
+                                      <td class="status-icon">
+                                          <div id="spinner" class="spinner-border spinner-border-sm" role="status"></div>
+                                      </td>
+                                    </tr>
+                                    <tr id="udp-group">
+                                      <th scope="row">UDP</th>
+                                      <td>99.77.128.0/18</td>
+                                      <td>3478</td>
+                                      <td class="status-icon">
+                                          <div id="spinner" class="spinner-border spinner-border-sm" role="status"></div>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                              </table>
+                              <div id="connectivity-help" class="form-text reset d-none">If you cannot see your camera feed, close all other software.</div>
+                          </div>
+                      </div> -->
+                  </form>
+              </div>
+          </div>
+      </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script
       src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"
@@ -94,6 +222,7 @@
     <script src="TemplateData/chime.js"></script>
     <script src="TemplateData/utils/toast.js"></script>
     <script src="TemplateData/pdf-viewer.js"></script>
+    <script src="TemplateData/js/meeting-readiness.js"></script>
   
     <form id="fileBrowserPopup" style="display: none">
         <div class="fileBrowserBackground"></div>
