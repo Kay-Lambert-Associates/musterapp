@@ -1,42 +1,24 @@
-const loadingTemplate = `
-<div class='space'></div>
-<div class="content">
-<div class="planet">
-   <div class="ring"></div>
-      <div class="cover-ring"></div>
-   <div class="spots">
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-
-   </div>
-</div>
-<p id="loading-text">Loading</p>
-</div>`;
-
-let loadingAdded = false;
-let loadingElement;
-
 function UnityProgress(unityInstance, progress) {
   if (!unityInstance.Module)
     return;
   if (!unityInstance.logo) {
-    if(!loadingAdded)
-    {
-      loadingElement = $(loadingTemplate);
-      $(unityInstance.container).append(loadingElement);
-      loadingAdded = true;
-    }
+    unityInstance.logo = document.createElement("div");
+    unityInstance.logo.className = "logo " + unityInstance.Module.splashScreenStyle;
+    unityInstance.container.appendChild(unityInstance.logo);
   }
-
-  loadingElement.children('#loading-text').text('Loading ' + Math.round((progress * 100)) + '%')
-
-  if(progress === 1)
-  {
-    loadingElement.addClass('d-none');
+  if (!unityInstance.progress) {    
+    unityInstance.progress = document.createElement("div");
+    unityInstance.progress.className = "progress " + unityInstance.Module.splashScreenStyle;
+    unityInstance.progress.empty = document.createElement("div");
+    unityInstance.progress.empty.className = "empty";
+    unityInstance.progress.appendChild(unityInstance.progress.empty);
+    unityInstance.progress.full = document.createElement("div");
+    unityInstance.progress.full.className = "full";
+    unityInstance.progress.appendChild(unityInstance.progress.full);
+    unityInstance.container.appendChild(unityInstance.progress);
   }
+  unityInstance.progress.full.style.width = (100 * progress) + "%";
+  unityInstance.progress.empty.style.width = (100 * (1 - progress)) + "%";
+  if (progress == 1)
+    unityInstance.logo.style.display = unityInstance.progress.style.display = "none";
 }
