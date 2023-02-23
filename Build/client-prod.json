@@ -1,7 +1,7 @@
 {
 "companyName": "Kay-LambertAssociates",
 "productName": "Muster",
-"productVersion": "1.0.1.2",
+"productVersion": "1.0.1.3",
 "dataUrl": "client-prod.data.unityweb",
 "wasmCodeUrl": "client-prod.wasm.code.unityweb",
 "wasmFrameworkUrl": "client-prod.wasm.framework.unityweb",
